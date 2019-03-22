@@ -1,30 +1,19 @@
 from flask import Flask,request,jsonify
-import json,os
+import json,os,io,traceback,sys
 import codecs
 
-
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 @app.route('/reader',methods=['POST'])
 def hello():
     try:
         if request.data:
             dat = request.data
-            modat = dat.decode('utf-8')
-            flag = False
-            try:
-                with codecs.open('file.txt', 'w+', encoding='utf8') as f:
-                    f.write(modat)
-                    flag = True
-            except:
-                print("Error in Saving the file")
-        else:
-            return not_found("File is Required in Body")
-
-        if flag == True and os.stat("file.txt").st_size != 0:
-            f = open("file.txt", "r")
+            datum = io.BytesIO(dat)
 
             lists = []
-            for x in f:
+            for x in datum:
+                x = x.decode('utf-8')
                 if 'ENTER' in x or 'EXIT' in x:
                     y = x.split(':')
                     detail = {}
@@ -35,20 +24,19 @@ def hello():
                     lists.append(detail.copy())
 
             if not lists:
-                os.remove("file.txt")
                 return not_found("Please Enter Logs File Only")
             else:
                 results = {
                     "result": lists.copy()
                 }
 
-            os.remove("file.txt")
             return jsonify(results)
         else:
-            os.remove("file.txt")
             return not_found('File is Empty')
-    except:
-        return not_found("plain/text only supported")
+
+    except Exception:
+        traceback.print_exc()
+        return not_found("Internal Server Error")
 
 @app.errorhandler(400)
 def not_found(msg):
@@ -62,5 +50,4 @@ def not_found(msg):
 
     return resp
 
-
-app.run(debug=True,threaded=True)
+app.run(host = '0.0.0.0',debug=True,threaded=True)
