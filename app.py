@@ -21,7 +21,7 @@ def hello():
                         detail["filename"] = y[1].strip()
                         detail["line_number"] = y[2].split(' ', 1)[0]
                         detail["name"] = "anonymous" if y[2].split(' ', 1)[1].strip() == "0" else y[2].split(' ', 1)[1].strip()
-                        lists.append(detail.copy())
+                        lists.append(detail)
                     except:
                         print("Invalid Lines")
 
@@ -29,7 +29,7 @@ def hello():
                 return not_found("Please Enter Logs File Only")
             else:
                 results = {
-                    "result": lists.copy()
+                    "result": lists
                 }
 
             return jsonify(results)
